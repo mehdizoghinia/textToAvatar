@@ -29,7 +29,7 @@ app.post('/generate-audio', async (req, res) => {
   try {
     const mp3 = await openai.audio.speech.create({
       model: "tts-1-hd",
-      voice: "onyx",
+      voice: "nova",
       input: text,
       format: 'ogg',  // Specify the desired format as OGG
 

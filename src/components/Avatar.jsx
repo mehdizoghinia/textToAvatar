@@ -1,11 +1,10 @@
-import { useAnimations, useFBX, useGLTF } from "@react-three/drei"; // Importing necessary hooks and components from drei.
-import { useFrame } from "@react-three/fiber"; // Importing hooks from react-three/fiber for frame updates and loaders.
-import React, { useEffect, useRef, useState } from "react"; // Importing React and necessary hooks.
-import * as THREE from "three"; // Importing THREE.js library.
-import lipsync from "../pizzas.json"; // Importing the lipsync JSON data.
+import { useAnimations, useFBX, useGLTF } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import React, { useEffect, useRef, useState } from "react";
+import * as THREE from "three";
+import lipsync from "../pizzas.json";
 
 const corresponding = {
-  // Mapping for visemes.
   A: "viseme_PP",
   B: "viseme_kk",
   C: "viseme_I",
@@ -18,33 +17,29 @@ const corresponding = {
 };
 
 export function Avatar({ audioUrl, ...props }) {
-  const [audio, setAudio] = useState(null); // State to manage the audio object.
-  const [animation, setAnimation] = useState("Idle"); // State to manage the current animation.
-  const [smoothMorphTarget] = useState(true); // State for smooth morph target (optional control).
-  const [morphTargetSmoothing] = useState(0.5); // State for morph target smoothing value.
+  const [audio, setAudio] = useState(null);
+  const [animation, setAnimation] = useState("Idle");
+  const [smoothMorphTarget] = useState(true);
+  const [morphTargetSmoothing] = useState(0.5);
 
-  const { nodes, materials } = useGLTF("/models/66675be5be9733f54c3c164f.glb"); // Load the GLTF model.
-  const { animations: idleAnimation } = useFBX("/animations/Idle.fbx"); // Load the Idle animation.
-  const { animations: greetingAnimation } = useFBX("/animations/Talking.fbx"); // Load the Greeting animation.
+  const { nodes, materials } = useGLTF("/models/66675be5be9733f54c3c164f.glb");
+  const { animations: idleAnimation } = useFBX("/animations/Idle.fbx");
+  const { animations: greetingAnimation } = useFBX("/animations/Talking.fbx");
 
-  // Name the animations for easier reference.
   idleAnimation[0].name = "Idle";
   greetingAnimation[0].name = "Talking";
 
-  const group = useRef(); // Ref to manage the group of objects.
+  const group = useRef();
   const { actions } = useAnimations(
     [idleAnimation[0], greetingAnimation[0]],
     group
-  ); // Load the animations into actions.
-
-  console.log("actions", actions);
+  );
 
   useEffect(() => {
-    // Effect to handle playing the audio and setting animation.
     if (audioUrl) {
-      const newAudio = new Audio(audioUrl); // Creating a new Audio object.
-      setAudio(newAudio); // Setting the new Audio object in state.
-      newAudio.play(); // Playing the audio.
+      const newAudio = new Audio(audioUrl);
+      setAudio(newAudio);
+      newAudio.play();
       setAnimation("Talking");
     } else {
       setAnimation("Idle");
@@ -52,7 +47,6 @@ export function Avatar({ audioUrl, ...props }) {
   }, [audioUrl]);
 
   useEffect(() => {
-    // Effect to play the current animation.
     if (actions && actions[animation]) {
       actions[animation].reset().play();
       return () => actions[animation].fadeOut(0.5);
@@ -62,31 +56,26 @@ export function Avatar({ audioUrl, ...props }) {
   }, [animation, actions]);
 
   useFrame((state) => {
-    // Frame-by-frame update for head follow.
     if (group.current) {
       group.current.getObjectByName("Head").lookAt(state.camera.position);
     }
   });
 
   useEffect(() => {
-    // Effect to handle changes in the audio.
     if (audio) {
       audio.play();
     }
   }, [audio]);
 
   useFrame(() => {
-    // Frame-by-frame update function.
-    if (!audio) return; // If no audio is set, return early.
-    const currentAudioTime = audio.currentTime; // Get the current time of the audio.
+    if (!audio) return;
+    const currentAudioTime = audio.currentTime;
     if (audio.paused || audio.ended) {
-      // If audio is paused or ended, set animation to idle.
       setAnimation("Idle");
       return;
     }
 
     Object.values(corresponding).forEach((value) => {
-      // Reset morph target influences.
       if (!smoothMorphTarget) {
         nodes.Wolf3D_Head.morphTargetInfluences[
           nodes.Wolf3D_Head.morphTargetDictionary[value]
@@ -118,7 +107,6 @@ export function Avatar({ audioUrl, ...props }) {
     });
 
     for (let i = 0; i < lipsync.mouthCues.length; i++) {
-      // Iterate through lipsync data to update morph targets.
       const mouthCue = lipsync.mouthCues[i];
       if (
         currentAudioTime >= mouthCue.start &&

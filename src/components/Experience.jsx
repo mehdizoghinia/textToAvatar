@@ -1,26 +1,19 @@
-import { Environment, OrbitControls, useTexture } from "@react-three/drei"; // Importing helper components from react-three/drei for 3D scene.
-import { useThree } from "@react-three/fiber"; // Importing useThree hook to access three.js state.
-import { Avatar } from "./Avatar"; // Importing the Avatar component which contains the 3D model.
+import { Environment, OrbitControls, useTexture } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
+import { Avatar } from "./Avatar";
 
 export const Experience = ({ audioUrl }) => {
-  const texture = useTexture("textures/class.jpg"); // Loading a texture for the background.
-  const viewport = useThree((state) => state.viewport); // Accessing the viewport state for dimensions.
+  const texture = useTexture("textures/class.jpg");
+  const viewport = useThree((state) => state.viewport);
 
   return (
     <>
-      <OrbitControls />{" "}
-      {/* Adding orbit controls to allow the user to interact with the 3D scene */}
-      <Avatar position={[0, -2.5, 5]} scale={2} audioUrl={audioUrl} />{" "}
-      {/* Adding the Avatar component with position, scale, and audio URL */}
-      <Environment preset="sunset" />{" "}
-      {/* Setting up the environment with a sunset preset for lighting */}
+      <OrbitControls />
+      <Avatar position={[0, -2.5, 5]} scale={2} audioUrl={audioUrl} />
+      <Environment preset="sunset" />
       <mesh>
-        {" "}
-        {/* Creating a mesh for the background plane */}
-        <planeGeometry args={[viewport.width, viewport.height]} />{" "}
-        {/* Defining the geometry of the plane with viewport dimensions */}
-        <meshBasicMaterial map={texture} />{" "}
-        {/* Applying the loaded texture to the plane */}
+        <planeGeometry args={[viewport.width, viewport.height]} />
+        <meshBasicMaterial map={texture} />
       </mesh>
     </>
   );
