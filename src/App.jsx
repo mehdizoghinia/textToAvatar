@@ -31,28 +31,54 @@ function App() {
   };
 
   return (
-    <div className="app">
-      {" "}
-      {/* Main container with a class name for styling */}
-      <div className="controls">
-        {" "}
-        {/* Container for the input and button */}
+    <div
+      className="app"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        backgroundColor: "#f0f0f0",
+      }}
+    >
+      <div
+        className="controls"
+        style={{ display: "flex", gap: "10px", marginBottom: "20px" }}
+      >
         <input
           type="text" // Input type set to text.
           value={text} // Binding the input value to the text state.
           onChange={(e) => setText(e.target.value)} // Updating the text state on input change.
           placeholder="Enter text" // Placeholder text for the input field.
+          style={{
+            padding: "10px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            border: "1px solid #ccc",
+            width: "300px",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
         />
-        <button onClick={handleGenerateAudio}>Generate Audio</button>{" "}
-        {/* Button to trigger audio generation */}
+        <button
+          onClick={handleGenerateAudio}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            borderRadius: "5px",
+            border: "none",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            cursor: "pointer",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          }}
+        >
+          Generate Audio
+        </button>
       </div>
       <Canvas shadows camera={{ position: [0, 0, 8], fov: 42 }}>
-        {" "}
-        {/* Canvas component for rendering 3D content */}
-        <color attach="background" args={["#ececec"]} />{" "}
-        {/* Setting the background color of the canvas */}
-        <Experience audioUrl={audioUrl} />{" "}
-        {/* Including the Experience component and passing the audio URL */}
+        <color attach="background" args={["#ececec"]} />
+        <Experience audioUrl={audioUrl} />
       </Canvas>
     </div>
   );

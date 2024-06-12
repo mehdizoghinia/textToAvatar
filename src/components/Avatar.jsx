@@ -1,6 +1,6 @@
 import { useAnimations, useFBX, useGLTF } from "@react-three/drei"; // Importing necessary hooks and components from drei.
-import { useFrame, useLoader } from "@react-three/fiber"; // Importing hooks from react-three/fiber for frame updates and loaders.
-import React, { useEffect, useMemo, useRef, useState } from "react"; // Importing React and necessary hooks.
+import { useFrame } from "@react-three/fiber"; // Importing hooks from react-three/fiber for frame updates and loaders.
+import React, { useEffect, useRef, useState } from "react"; // Importing React and necessary hooks.
 import * as THREE from "three"; // Importing THREE.js library.
 import lipsync from "../pizzas.json"; // Importing the lipsync JSON data.
 
@@ -19,17 +19,61 @@ const corresponding = {
 
 export function Avatar({ audioUrl, ...props }) {
   const [audio, setAudio] = useState(null); // State to manage the audio object.
+  const [animation, setAnimation] = useState("Idle"); // State to manage the current animation.
   const [smoothMorphTarget] = useState(true); // State for smooth morph target (optional control).
   const [morphTargetSmoothing] = useState(0.5); // State for morph target smoothing value.
 
+  const { nodes, materials } = useGLTF("/models/66675be5be9733f54c3c164f.glb"); // Load the GLTF model.
+  const { animations: idleAnimation } = useFBX("/animations/Idle.fbx"); // Load the Idle animation.
+  const { animations: greetingAnimation } = useFBX("/animations/Talking.fbx"); // Load the Greeting animation.
+
+  // Name the animations for easier reference.
+  idleAnimation[0].name = "Idle";
+  greetingAnimation[0].name = "Talking";
+
+  const group = useRef(); // Ref to manage the group of objects.
+  const { actions } = useAnimations(
+    [idleAnimation[0], greetingAnimation[0]],
+    group
+  ); // Load the animations into actions.
+
+  console.log("actions", actions);
+
   useEffect(() => {
-    // Effect to handle changes in the audioUrl.
+    // Effect to handle playing the audio and setting animation.
     if (audioUrl) {
       const newAudio = new Audio(audioUrl); // Creating a new Audio object.
       setAudio(newAudio); // Setting the new Audio object in state.
       newAudio.play(); // Playing the audio.
+      setAnimation("Talking");
+    } else {
+      setAnimation("Idle");
     }
   }, [audioUrl]);
+
+  useEffect(() => {
+    // Effect to play the current animation.
+    if (actions && actions[animation]) {
+      actions[animation].reset().play();
+      return () => actions[animation].fadeOut(0.5);
+    } else {
+      console.error(`Animation "${animation}" not found.`);
+    }
+  }, [animation, actions]);
+
+  useFrame((state) => {
+    // Frame-by-frame update for head follow.
+    if (group.current) {
+      group.current.getObjectByName("Head").lookAt(state.camera.position);
+    }
+  });
+
+  useEffect(() => {
+    // Effect to handle changes in the audio.
+    if (audio) {
+      audio.play();
+    }
+  }, [audio]);
 
   useFrame(() => {
     // Frame-by-frame update function.
@@ -125,51 +169,6 @@ export function Avatar({ audioUrl, ...props }) {
     }
   });
 
-  useEffect(() => {
-    // Effect to handle playing the audio and setting animation.
-    if (audio) {
-      audio.play();
-      setAnimation("Greeting");
-    } else {
-      setAnimation("Idle");
-    }
-  }, [audio]);
-
-  const { nodes, materials } = useGLTF("/models/646d9dcdc8a5f5bddbfac913.glb"); // Load the GLTF model.
-  const { animations: idleAnimation } = useFBX("/animations/Idle.fbx"); // Load the Idle animation.
-  const { animations: angryAnimation } = useFBX(
-    "/animations/Angry Gesture.fbx"
-  ); // Load the Angry animation.
-  const { animations: greetingAnimation } = useFBX(
-    "/animations/Standing Greeting.fbx"
-  ); // Load the Greeting animation.
-
-  idleAnimation[0].name = "Idle"; // Name the animations for easier reference.
-  angryAnimation[0].name = "Angry";
-  greetingAnimation[0].name = "Greeting";
-
-  const [animation, setAnimation] = useState("Idle"); // State to manage the current animation.
-
-  const group = useRef(); // Ref to manage the group of objects.
-  const { actions } = useAnimations(
-    [idleAnimation[0], angryAnimation[0], greetingAnimation[0]],
-    group
-  ); // Load the animations into actions.
-
-  useEffect(() => {
-    // Effect to play the current animation.
-    actions[animation].reset().fadeIn(0.5).play();
-    return () => actions[animation].fadeOut(0.5);
-  }, [animation]);
-
-  useFrame((state) => {
-    // Frame-by-frame update for head follow.
-    if (true) {
-      // headFollow always true for now
-      group.current.getObjectByName("Head").lookAt(state.camera.position);
-    }
-  });
-
   return (
     <group {...props} dispose={null} ref={group}>
       <primitive object={nodes.Hips} />
@@ -234,4 +233,4 @@ export function Avatar({ audioUrl, ...props }) {
   );
 }
 
-useGLTF.preload("/models/646d9dcdc8a5f5bddbfac913.glb");
+useGLTF.preload("/models/66675be5be9733f54c3c164f.glb");
