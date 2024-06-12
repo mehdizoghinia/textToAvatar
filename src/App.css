@@ -56,3 +56,26 @@ body, html, #root, .app {
   padding: 10px;
   border-top: 1px solid #ccc;
 }
+
+.interaction-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.interaction-overlay button {
+  padding: 20px 40px;
+  font-size: 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
