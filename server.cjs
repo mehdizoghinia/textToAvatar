@@ -19,10 +19,15 @@ app.use(cors());  // Use CORS middleware to allow cross-origin requests
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Ensure the output directory exists
-const outputDir = path.join(__dirname, 'output'); // Define the output directory path
-if (!fs.existsSync(outputDir)) { // Check if the directory does not exist
-  fs.mkdirSync(outputDir, { recursive: true }); // Create the directory
+// Define the output directory path
+const outputDir = path.join(__dirname, 'output'); 
+
+// Check if the directory does not exist and create it if it doesn't
+if (!fs.existsSync(outputDir)) { 
+  fs.mkdirSync(outputDir, { recursive: true }); 
+  console.log('Output directory created:', outputDir);
+} else {
+  console.log('Output directory already exists:', outputDir);
 }
 
 // Serve static files from the 'output' directory

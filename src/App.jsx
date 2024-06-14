@@ -10,6 +10,7 @@ import {
   MessageList,
   MessageInput,
   TypingIndicator,
+  Message,
 } from "@chatscope/chat-ui-kit-react";
 
 import { Experience } from "./components/Experience"; // Import the Experience component
@@ -242,16 +243,16 @@ function App() {
               }
             >
               {chatMessages.map((message, i) => (
-                <div
+                <Message
                   key={i}
-                  className={`message ${
-                    message.sender === "ChatGPT"
-                      ? "message-incoming"
-                      : "message-outgoing"
-                  }`}
-                >
-                  {message.message}
-                </div>
+                  model={{
+                    message: message.message,
+                    sentTime: "just now",
+                    sender: message.sender === "ChatGPT" ? "ChatGPT" : "You",
+                    direction:
+                      message.sender === "ChatGPT" ? "incoming" : "outgoing",
+                  }}
+                />
               ))}
             </MessageList>
             <MessageInput
