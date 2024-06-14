@@ -10,7 +10,7 @@ const fetch = require('node-fetch'); // Import node-fetch to make HTTP requests
 const app = express(); // Create an Express application
 const port = 3001; // Define the port number
 
-const apiKey = 'sk-proj-i0KeNpUZHRKZ05XfhcK4T3BlbkFJcXXZBSx6t34hCeQBtX7j';  // Replace with your actual API key
+const apiKey = 'API_KEY';  // Replace with your actual API key
 const openai = new OpenAI({ apiKey }); // Initialize OpenAI with the API key
 
 app.use(bodyParser.json()); // Use Body-Parser to parse JSON requests

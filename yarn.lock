@@ -1076,6 +1076,11 @@ detect-gpu@^5.0.28:
   dependencies:
     webgl-constants "^1.1.1"
 
+dotenv@^16.4.5:
+  version "16.4.5"
+  resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.4.5.tgz"
+  integrity sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==
+
 draco3d@^1.4.1:
   version "1.5.6"
   resolved "https://registry.npmjs.org/draco3d/-/draco3d-1.5.6.tgz"

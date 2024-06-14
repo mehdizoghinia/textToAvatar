@@ -16,8 +16,7 @@ import {
 import { Experience } from "./components/Experience"; // Import the Experience component
 
 // Define the OpenAI API key
-const OPENAI_API_KEY =
-  "sk-proj-i0KeNpUZHRKZ05XfhcK4T3BlbkFJcXXZBSx6t34hCeQBtX7j";
+const OPENAI_API_KEY = import.meta.env.OPENAI_API_KEY;
 
 function App() {
   // State to track if the chatbot is typing
