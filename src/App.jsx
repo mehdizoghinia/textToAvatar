@@ -1,34 +1,47 @@
-import React, { useState, useEffect, useRef } from "react"; // Import React and hooks
-import { Canvas } from "@react-three/fiber"; // Import Canvas from react-three/fiber
-import "./App.css"; // Import the CSS file
-import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css"; // Import chat UI kit styles
+import React, { useState, useEffect, useRef } from "react"; // Import React and hooks from the React library
+import { Canvas } from "@react-three/fiber"; // Import Canvas component from the react-three/fiber library
+import "./App.css"; // Import the App.css file for styling
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css"; // Import styles for chat UI kit
+
+// Import components from the chat UI kit
 import {
   MainContainer,
   ChatContainer,
   MessageList,
-  Message,
   MessageInput,
   TypingIndicator,
-} from "@chatscope/chat-ui-kit-react"; // Import chat UI kit components
+} from "@chatscope/chat-ui-kit-react";
+
 import { Experience } from "./components/Experience"; // Import the Experience component
 
+// Define the OpenAI API key
 const OPENAI_API_KEY =
   "sk-proj-i0KeNpUZHRKZ05XfhcK4T3BlbkFJcXXZBSx6t34hCeQBtX7j";
 
 function App() {
-  const [isChatbotTyping, setIsChatbotTyping] = useState(false); // State to track if the chatbot is typing
+  // State to track if the chatbot is typing
+  const [isChatbotTyping, setIsChatbotTyping] = useState(false);
+
+  // State to manage chat messages
   const [chatMessages, setChatMessages] = useState([
-    // State to manage chat messages
     {
       message:
         "Hi There, I'm Isabelle and I'd love to help you with your homework today",
       sender: "ChatGPT",
     },
   ]);
-  const [audioUrl, setAudioUrl] = useState(null); // State to manage the audio URL
-  const [userInteracted, setUserInteracted] = useState(false); // State to track user interaction
-  const [isRecording, setIsRecording] = useState(false); // State to manage recording status
-  const mediaRecorderRef = useRef(null); // Ref to manage MediaRecorder
+
+  // State to manage the audio URL
+  const [audioUrl, setAudioUrl] = useState(null);
+
+  // State to track user interaction
+  const [userInteracted, setUserInteracted] = useState(false);
+
+  // State to manage recording status
+  const [isRecording, setIsRecording] = useState(false);
+
+  // Ref to manage MediaRecorder
+  const mediaRecorderRef = useRef(null);
 
   // Initial TTS message
   useEffect(() => {
@@ -60,7 +73,7 @@ function App() {
     };
 
     const updatedChatMessages = [...chatMessages, newUserMessage]; // Update chat messages
-    setChatMessages(updatedChatMessages);
+    setChatMessages(updatedChatMessages); // Set the updated chat messages
 
     setIsChatbotTyping(true); // Set chatbot typing state
 
@@ -94,7 +107,7 @@ function App() {
     });
 
     const data = await response.json(); // Parse the response
-    console.log("data", data);
+    console.log("data", data); // Log the data
     const botMessage = data.choices[0].message.content; // Extract the bot message
 
     setChatMessages([
@@ -140,19 +153,19 @@ function App() {
   const handleStartRecording = () => {
     // Function to start recording
     navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start();
-      setIsRecording(true);
+      const mediaRecorder = new MediaRecorder(stream); // Create a new MediaRecorder
+      mediaRecorderRef.current = mediaRecorder; // Set the MediaRecorder ref
+      mediaRecorder.start(); // Start recording
+      setIsRecording(true); // Set recording state to true
 
-      const audioChunks = [];
+      const audioChunks = []; // Array to store audio chunks
       mediaRecorder.ondataavailable = (event) => {
-        audioChunks.push(event.data);
+        audioChunks.push(event.data); // Push audio data to chunks
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-        handleTranscribeAudio(audioBlob);
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" }); // Create a Blob from audio chunks
+        handleTranscribeAudio(audioBlob); // Transcribe the audio
       };
     });
   };
@@ -160,25 +173,25 @@ function App() {
   const handleStopRecording = () => {
     // Function to stop recording
     if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
+      mediaRecorderRef.current.stop(); // Stop the MediaRecorder
+      setIsRecording(false); // Set recording state to false
     }
   };
 
   const handleTranscribeAudio = async (audioBlob) => {
     // Function to transcribe audio
-    const formData = new FormData();
+    const formData = new FormData(); // Create a new FormData object
     formData.append("audio", audioBlob, "audio.wav"); // Append the audio Blob with a filename
 
     try {
       const response = await fetch("http://localhost:3001/transcribe-audio", {
         method: "POST",
-        body: formData,
+        body: formData, // Send the form data
       });
 
       if (response.ok) {
-        const data = await response.json();
-        const transcribedMessage = data.text;
+        const data = await response.json(); // Parse the response
+        const transcribedMessage = data.text; // Extract the transcribed text
 
         const newUserMessage = {
           message: transcribedMessage,
@@ -186,17 +199,17 @@ function App() {
           direction: "outgoing",
         };
 
-        const updatedChatMessages = [...chatMessages, newUserMessage];
-        setChatMessages(updatedChatMessages); // Add the transcribed message to the chat
+        const updatedChatMessages = [...chatMessages, newUserMessage]; // Add the transcribed message to chat
+        setChatMessages(updatedChatMessages); // Set the updated chat messages
 
         setIsChatbotTyping(true); // Set chatbot typing state
 
         await processUserMessageToChatGPT(updatedChatMessages); // Process the transcribed message with ChatGPT
       } else {
-        console.error("Failed to transcribe audio");
+        console.error("Failed to transcribe audio"); // Log error if any
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error:", error); // Log error if any
     }
   };
 
@@ -228,23 +241,18 @@ function App() {
                 ) : null
               }
             >
-              {chatMessages.map(
-                (
-                  message,
-                  i // Map through chat messages
-                ) => (
-                  <div
-                    key={i}
-                    className={`message ${
-                      message.sender === "ChatGPT"
-                        ? "message-incoming"
-                        : "message-outgoing"
-                    }`}
-                  >
-                    {message.message}
-                  </div>
-                )
-              )}
+              {chatMessages.map((message, i) => (
+                <div
+                  key={i}
+                  className={`message ${
+                    message.sender === "ChatGPT"
+                      ? "message-incoming"
+                      : "message-outgoing"
+                  }`}
+                >
+                  {message.message}
+                </div>
+              ))}
             </MessageList>
             <MessageInput
               placeholder="Type Message here"
@@ -264,4 +272,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; // Export the App component as default
