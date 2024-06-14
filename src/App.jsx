@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Import React and hooks
+import React, { useState, useEffect, useRef } from "react"; // Import React and hooks
 import { Canvas } from "@react-three/fiber"; // Import Canvas from react-three/fiber
 import "./App.css"; // Import the CSS file
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css"; // Import chat UI kit styles
@@ -12,7 +12,8 @@ import {
 } from "@chatscope/chat-ui-kit-react"; // Import chat UI kit components
 import { Experience } from "./components/Experience"; // Import the Experience component
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY; // Use Vite's way to access environment variables
+const OPENAI_API_KEY =
+  "sk-proj-i0KeNpUZHRKZ05XfhcK4T3BlbkFJcXXZBSx6t34hCeQBtX7j";
 
 function App() {
   const [isChatbotTyping, setIsChatbotTyping] = useState(false); // State to track if the chatbot is typing
@@ -26,14 +27,14 @@ function App() {
   ]);
   const [audioUrl, setAudioUrl] = useState(null); // State to manage the audio URL
   const [userInteracted, setUserInteracted] = useState(false); // State to track user interaction
+  const [isRecording, setIsRecording] = useState(false); // State to manage recording status
+  const mediaRecorderRef = useRef(null); // Ref to manage MediaRecorder
 
   // Initial TTS message
   useEffect(() => {
     const playInitialMessage = async () => {
       // Function to play the initial TTS message
-      await handleGenerateAudio(
-        "Hi There, I'm Isabelle and I'd love to help you with your homework today"
-      );
+      await handleGenerateAudio("Hi There");
     };
 
     if (userInteracted) {
@@ -93,6 +94,7 @@ function App() {
     });
 
     const data = await response.json(); // Parse the response
+    console.log("data", data);
     const botMessage = data.choices[0].message.content; // Extract the bot message
 
     setChatMessages([
@@ -133,6 +135,69 @@ function App() {
   const handleUserInteraction = () => {
     // Handle user interaction
     setUserInteracted(true); // Set user interaction state
+  };
+
+  const handleStartRecording = () => {
+    // Function to start recording
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+
+      const audioChunks = [];
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        handleTranscribeAudio(audioBlob);
+      };
+    });
+  };
+
+  const handleStopRecording = () => {
+    // Function to stop recording
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const handleTranscribeAudio = async (audioBlob) => {
+    // Function to transcribe audio
+    const formData = new FormData();
+    formData.append("audio", audioBlob, "audio.wav"); // Append the audio Blob with a filename
+
+    try {
+      const response = await fetch("http://localhost:3001/transcribe-audio", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const transcribedMessage = data.text;
+
+        const newUserMessage = {
+          message: transcribedMessage,
+          sender: "user",
+          direction: "outgoing",
+        };
+
+        const updatedChatMessages = [...chatMessages, newUserMessage];
+        setChatMessages(updatedChatMessages); // Add the transcribed message to the chat
+
+        setIsChatbotTyping(true); // Set chatbot typing state
+
+        await processUserMessageToChatGPT(updatedChatMessages); // Process the transcribed message with ChatGPT
+      } else {
+        console.error("Failed to transcribe audio");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   return (
@@ -187,6 +252,13 @@ function App() {
             />
           </ChatContainer>
         </MainContainer>
+      </div>
+      <div className="recording-controls">
+        {isRecording ? (
+          <button onClick={handleStopRecording}>Stop Recording</button>
+        ) : (
+          <button onClick={handleStartRecording}>Start Recording</button>
+        )}
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ const path = require('path'); // Import the Path module
 const OpenAI = require('openai'); // Import the OpenAI library
 const bodyParser = require('body-parser'); // Import the Body-Parser middleware
 const cors = require('cors');  // Import the CORS middleware
+const multer = require('multer'); // Import Multer for handling file uploads
+const fetch = require('node-fetch'); // Import node-fetch to make HTTP requests
 
 const app = express(); // Create an Express application
 const port = 3001; // Define the port number
@@ -13,6 +15,9 @@ const openai = new OpenAI({ apiKey }); // Initialize OpenAI with the API key
 
 app.use(bodyParser.json()); // Use Body-Parser to parse JSON requests
 app.use(cors());  // Use CORS middleware to allow cross-origin requests
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Ensure the output directory exists
 const outputDir = path.join(__dirname, 'output'); // Define the output directory path
@@ -44,6 +49,38 @@ app.post('/generate-audio', async (req, res) => { // Define a POST route for gen
   } catch (error) {
     console.error('Error generating audio:', error); // Log any errors
     res.status(500).send('Failed to generate audio'); // Respond with a failure message
+  }
+});
+
+app.post('/transcribe-audio', upload.single('audio'), async (req, res) => {
+  const audioBuffer = req.file.buffer; // Get the audio buffer from the uploaded file
+
+  const boundary = 'BoUnDaRy'; // Define the boundary string
+  const formDataBody = Buffer.concat([
+    Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${req.file.originalname}"\r\nContent-Type: ${req.file.mimetype}\r\n\r\n`),
+    audioBuffer,
+    Buffer.from(`\r\n--${boundary}\r\nContent-Disposition: form-data; name="model"\r\n\r\nwhisper-1\r\n--${boundary}--\r\n`),
+  ]);
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+      },
+      body: formDataBody,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error transcribing audio: ${response.statusText}`);
+    }
+
+    const transcription = await response.json();
+    res.json({ text: transcription.text }); // Respond with the transcribed text
+  } catch (error) {
+    console.error('Error transcribing audio:', error); // Log any errors
+    res.status(500).send('Failed to transcribe audio'); // Respond with a failure message
   }
 });
 
